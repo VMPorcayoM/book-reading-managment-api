@@ -1,0 +1,48 @@
+type Query {
+    userById(id: ID!): UserOut
+    allUsers: [UserOut]
+    bookById(id: ID!): Book
+    allBooks: [Book]
+}
+
+type Mutation {
+    createUser(user: UserIn): UserOut
+    login(username:String!, password:String!): SessionToken
+}
+type UserOut {
+    id: ID!
+    name: String!
+    username: String!
+    email: String!
+}
+input UserIn {
+    name: String!
+    username: String!
+    email: String!
+    password: String!
+}
+type SessionToken{
+    token: String
+    user: UserOut
+    expiresAt: String
+}
+
+
+
+type Book {
+    id: ID!
+    title: String!
+    author: Author
+    genre: Genre
+}
+
+type Author {
+    id: ID!
+    name: String!
+    biography: String
+}
+
+type Genre {
+    id: ID!
+    name: String!
+}
