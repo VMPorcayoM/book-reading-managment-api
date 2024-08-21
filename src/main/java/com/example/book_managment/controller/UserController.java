@@ -12,8 +12,6 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -46,31 +44,24 @@ public class UserController {
     @Transactional
     @MutationMapping
     public SessionToken login(@Argument String username, @Argument String password) {
-        try {
-            User user = userRepository.findByUsername(username);
-            if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
-                throw new AuthenticationException("Invalid username or password");
-            }
-            // Buscar un token válido existente
-            Optional<SessionToken> existingToken = sessionTokenRepository.findByUser(user);
-            if (existingToken.isPresent() && LocalDateTime.parse(existingToken.get().getExpiresAt()).isAfter(Instant.now())) {
-                return existingToken.get(); // Retornar el token existente si es válido
-            }
-            // Generar token y guardar en la base de datos
-            String token = UUID.randomUUID().toString();
-            SessionToken sessionToken = new SessionToken();
-            sessionToken.setUser(user);
-            sessionToken.setToken(token);
-            sessionToken.setCreatedAt(LocalDateTime.now());
-            sessionToken.setExpiresAt(LocalDateTime.now().plus(1, ChronoUnit.DAYS));
-            sessionTokenRepository.save(sessionToken);
-            Optional<SessionToken> foundToken = sessionTokenRepository.findByUserAndCreatedAt(user, sessionToken.getCreatedAt());
-            if (!foundToken.isPresent()) {
-                throw new RuntimeException("Token not found after saving");
-            }
-            return foundToken.get();
-        } catch (AuthenticationException e) {
-            throw e;
+        User user = userRepository.findByUsername(username);
+        if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
+            throw new AuthenticationException("Invalid username or password");
         }
+
+        // Buscar un token válido existente
+        Optional<SessionToken> existingToken = sessionTokenRepository.findFirstByUser_IdOrderByCreatedAtDesc(user.getId());
+        if (existingToken.isPresent() && existingToken.get().getExpiresAt().isAfter(LocalDateTime.now())) {
+            return existingToken.get(); // Retornar el token existente si es válido
+        }
+
+        // Generar nuevo token y guardar en la base de datos
+        SessionToken sessionToken = new SessionToken();
+        sessionToken.setUser(user);
+        sessionToken.setToken(UUID.randomUUID().toString());
+        sessionToken.setCreatedAt(LocalDateTime.now());
+        sessionToken.setExpiresAt(LocalDateTime.now().plus(1, ChronoUnit.DAYS));
+        return sessionTokenRepository.save(sessionToken);
     }
+
 }
