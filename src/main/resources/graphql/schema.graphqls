@@ -6,34 +6,44 @@ type Query {
 }
 
 type Mutation {
-    createUser(user: UserIn): UserOut
-    login(username:String!, password:String!): SessionToken
+    createUser(user: UserInput): UserOut
+    login(username: String!, password: String!): SessionToken
+    createOrUpdateBook(book: BookInput): Book
 }
+
 type UserOut {
     id: ID!
     name: String!
     username: String!
     email: String!
 }
-input UserIn {
+
+input UserInput {
     name: String!
     username: String!
     email: String!
     password: String!
 }
-type SessionToken{
-    token: String
-    user: UserOut
-    expiresAt: String
+
+type SessionToken {
+    token: String!
+    user: UserOut!
+    expiresAt: String!  # Considera si es una cadena o un tipo de fecha
 }
 
-
+input BookInput {
+    title: String!
+    publicationDate: String!  # Considera usar un tipo de fecha si aplica
+    author: AuthorInput!
+    genre: GenreInput!
+}
 
 type Book {
     id: ID!
     title: String!
-    author: Author
-    genre: Genre
+    publicationDate: String!  # Considera usar un tipo de fecha si aplica
+    author: Author!
+    genre: Genre!
 }
 
 type Author {
@@ -44,5 +54,14 @@ type Author {
 
 type Genre {
     id: ID!
+    name: String!
+}
+
+input AuthorInput {
+    name: String!
+    biography: String
+}
+
+input GenreInput {
     name: String!
 }

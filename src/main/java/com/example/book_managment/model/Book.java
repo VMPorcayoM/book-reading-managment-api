@@ -1,5 +1,6 @@
 package com.example.book_managment.model;
 
+import java.time.LocalDate;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,6 +31,6 @@ public class Book {
     @ManyToOne
     @JoinColumn(name = "genre_id", nullable = false)
     private Genre genre;
-    @Column(nullable = false)
-    private String publication_date;
+    @Column(name = "publication_date", nullable = false)
+    private LocalDate publicationDate;
 }
